@@ -1,0 +1,4 @@
+{
+  "gamerule.forceShaderRender.description": "If enabled, forces shaders to render even if they are not normally rendered. [F4]",
+  "gamerule.forceShaderRender": "Force Shader Rendering [CalamityAPI]"
+}

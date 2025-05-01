@@ -1,0 +1,29 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="Apache License version 2.0"
+
+[[mods]]
+modId="calamity_api"
+version="1.0.0"
+displayName="CalamityAPI"
+displayURL="https://mcreator.net"
+logoFile="logo.png"
+credits=" MCreator , LucilleKarma"
+authors="Nebula (PixelProtogen)"
+description="Modding API for flexable shaders usage and other utils. This mod is also inspired by Lucille Karma's Wraith Of The God's Mod (Terraria)"
+
+# Start of user code block mod configuration
+# End of user code block mod configuration
+
+[[dependencies.calamity_api]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1]"
+    ordering="AFTER"
+    side="BOTH"
+
+
+
+
+# Start of user code block dependencies configuration
+# End of user code block dependencies configuration

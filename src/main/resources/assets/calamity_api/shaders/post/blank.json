@@ -1,0 +1,12 @@
+{
+    "targets": [
+      "swap"
+    ],
+    "passes": [
+      {
+        "name": "calamity_api:blank",
+        "intarget": "minecraft:main",
+        "outtarget": "swap"
+      }
+    ]
+  }  
