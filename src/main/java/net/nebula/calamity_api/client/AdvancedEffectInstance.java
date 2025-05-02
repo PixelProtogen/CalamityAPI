@@ -17,75 +17,53 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class AdvancedEffectInstance {
-		private final List<AdvancedPostPass> passes = Lists.newArrayList();
-		private String last = "swap";
+    private final List<AdvancedPostPass> passes = Lists.newArrayList();
+    private String last = "";
+    private final PostChain MainChain;
+    private final PostPass MainPass;
 
-		@SuppressWarnings("unchecked")
-		private static List<PostPass> getPasses(PostChain chain) {
-		    try {
-		        Field field = PostChain.class.getDeclaredField("passes");
-		        field.setAccessible(true);
-		        return (List<PostPass>) field.get(chain);
-		    } catch (Exception e) {
-		        throw new RuntimeException("[CalamityAPI] Failed to access passes", e);
-		    }
-		}
+    @SuppressWarnings("unchecked")
+    private static List<PostPass> getPasses(PostChain chain) {
+        try {
+            Field field = PostChain.class.getDeclaredField("passes");
+            field.setAccessible(true);
+            return (List<PostPass>) field.get(chain);
+        } catch (Exception e) {
+            throw new RuntimeException("[CalamityAPI] Failed to access passes", e);
+        }
+    }
 
-		private PostChain MainChain;
-		private PostPass MainPass;
+    public AdvancedEffectInstance(PostChain chain) {
+        this.MainChain = chain;
+        this.MainPass = getPasses(chain).get(0);
+        this.last = "swap";
+    }
 
-		public AdvancedEffectInstance(PostChain chain) {
-			this.MainChain = chain;
-			this.MainPass = getPasses(chain).get(0);
-		}
+	private RenderTarget next() {
+	    int number = last != null && last.length() > 4 ? last.substring(4).matches("\\d+") ? Integer.parseInt(last.substring(4)) + 1 : 1 : 1;
+	    String target = "auto" + number;
+	    MainChain.addTempTarget(target, MainPass.inTarget.width, MainPass.inTarget.height);
+	    last = target;
+	    return MainChain.getTempTarget(target);
+	}
 
-		public void Update(boolean forceUpdateAll) {
-			for ( AdvancedPostPass pass : this.passes) {
-				if (pass.updateable() == true || forceUpdateAll == true) {
-					pass.release();
-					boolean result = pass.func().apply(pass);
-					pass.effect().safeGetUniform("isEnabled").set(result ? 1.0F : 0.0F);
-				}
-			}
-		}
-
-		private RenderTarget next() {
-		    int number = 0;
-		    if (this.last.startsWith("swap")) {
-		        String suffix = this.last.substring(4);
-		        if (!suffix.isEmpty()) {
-		            try {
-		                number = Integer.parseInt(suffix);
-		            } catch (NumberFormatException e) {
-		                number = 0;
-		            }
-		        }
-		    }
-		    number++;
-		    String target = "swap" + number;
-		    this.MainChain.addTempTarget(target, this.MainPass.inTarget.width, this.MainPass.inTarget.height);
-		    this.last = target;
-		    return this.MainChain.getTempTarget(target);
-		}
-
-
-		public void End(String endType) {
-			try {
-				this.MainChain.addPass(endType,this.MainChain.getTempTarget(last),this.MainPass.inTarget);
-				Update(true);
-			} catch (IOException e) {
-				throw new RuntimeException("[CalamityAPI] unable to finalize shader", e);
-			}
-		}
+    public void End(String endType) {
+        try {
+            this.MainChain.addPass(endType, this.MainChain.getTempTarget(last), this.MainPass.inTarget);
+        } catch (IOException e) {
+            throw new RuntimeException("[CalamityAPI] Unable to finalize shader", e);
+        }
+    }
 
 		@Nullable
-		public EffectInstance Add(String data,Function<AdvancedPostPass, Boolean> func,boolean updateable) {
+		@SuppressWarnings("unchecked")
+		public AdvancedPostPass Add(String data,Function<AdvancedPostPass, Boolean> func,boolean updateable) {
 			try {
 				PostPass effect = this.MainChain.addPass(data,this.MainChain.getTempTarget(this.last),next());
 				AdvancedPostPass advPass = new AdvancedPostPass(data,effect,func,updateable);
 				func.apply(advPass);
 				this.passes.add(this.passes.size(),advPass);
-				return effect.getEffect();
+				return advPass;
 			} catch (IOException e) {
 				throw new RuntimeException("[CalamityAPI] failed to add shader", e);
 			}

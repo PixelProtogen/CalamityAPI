@@ -1,0 +1,4 @@
+{
+  "gamerule.forceShaderRender.description": "Если включено, шейдеры будут отображаться, даже если они не отображаются в обычном режиме. [F4]",
+  "gamerule.forceShaderRender": "Принудительный рендер шейдеров [CalamityAPI]"
+}

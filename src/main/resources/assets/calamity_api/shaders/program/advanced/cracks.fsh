@@ -2,7 +2,6 @@
 
 uniform sampler2D DiffuseSampler;
 uniform sampler2D HeightmapSampler;
-uniform float isEnabled;
 uniform vec2 ScreenSize;
 
 in vec2 texCoord;
@@ -14,7 +13,6 @@ void main() {
     // Base color
     vec4 baseColor = texture(DiffuseSampler, texCoord);
 
-    if (isEnabled == 1.0) {
         // Read heightmap and compute brightness (0-1)
         vec3 heightColor = texture(HeightmapSampler, texCoord).rgb;
         float brightness = dot(heightColor, vec3(0.299, 0.587, 0.114));
@@ -29,7 +27,4 @@ void main() {
         vec4 distortedColor = texture(DiffuseSampler, distortedCoord);
 
         fragColor = vec4(distortedColor.rgb, baseColor.a);
-    } else {
-        fragColor = vec4(baseColor.rgb,1.0);
-    }
 }

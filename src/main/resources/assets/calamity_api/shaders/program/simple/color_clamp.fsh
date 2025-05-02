@@ -1,7 +1,6 @@
 #version 150
 
 uniform sampler2D DiffuseSampler;
-uniform float isEnabled;
 uniform vec3 Data;
 
 in vec2 texCoord;
@@ -25,7 +24,6 @@ vec3 rgb2hsv(vec3 c)
 
 void main() {
     vec4 texColor = texture(DiffuseSampler, texCoord);
-    if (isEnabled == 1.0) {
         vec3 hsvColor = rgb2hsv(vec3(texColor.r,texColor.g,texColor.b));
         bool inRange = (Data.z <= 0.5 && hsvColor.r >= Data.x && hsvColor.r <= Data.y) || (Data.z > 0.5 && hsvColor.r <= Data.x && hsvColor.r >= Data.y);
 
@@ -34,7 +32,4 @@ void main() {
         } else {
             fragColor = vec4(texColor.rgb,1.0);
         }
-    } else {
-        fragColor = vec4(texColor.rgb,1.0);
-    }
 }

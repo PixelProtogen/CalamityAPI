@@ -101,7 +101,7 @@
           "src/main/java/net/nebula/calamity_api/CalamityUtils.java"
         ]
       },
-      "path": "~/math"
+      "path": "~/utils"
     },
     {
       "name": "CFrame",
@@ -129,9 +129,17 @@
   "tag_elements": {},
   "tab_element_order": {},
   "language_map": {
+    "ru_ru": {
+      "gamerule.forceShaderRender.description": "Если включено, шейдеры будут отображаться, даже если они не отображаются в обычном режиме. [F4]",
+      "gamerule.forceShaderRender": "Принудительный рендер шейдеров [CalamityAPI]"
+    },
     "en_us": {
       "gamerule.forceShaderRender.description": "If enabled, forces shaders to render even if they are not normally rendered. [F4]",
       "gamerule.forceShaderRender": "Force Shader Rendering [CalamityAPI]"
+    },
+    "uk_ua": {
+      "gamerule.forceShaderRender.description": "Якщо ввімкнено, шейдери змушують відтворюватися, навіть якщо вони не відображаються нормально. [F4]",
+      "gamerule.forceShaderRender": "Примусовий рендеринг шейдерів [CalamityAPI]"
     }
   },
   "foldersRoot": {

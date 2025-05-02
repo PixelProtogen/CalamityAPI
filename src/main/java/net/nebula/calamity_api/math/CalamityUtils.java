@@ -32,6 +32,13 @@ public class CalamityUtils {
 		return result;
 	}
 
+	public static boolean inScreenBounds(Vector3f worldPos) {
+		Minecraft mc = Minecraft.getInstance();
+		CFrame cf = CFrame.Camera(mc.gameRenderer.getMainCamera());
+		Vector3f result = cf.worldToScreenPoint(worldPos,2048F);
+		return result.z > -1F;
+	}
+
 	public static Vector3f worldToScreenPoint(BlockPos pos, float MaxDist) {
 		return worldToScreenPoint( new Vector3f( (float) pos.getX(),(float) pos.getY(),(float) pos.getZ()) , MaxDist );
 	}

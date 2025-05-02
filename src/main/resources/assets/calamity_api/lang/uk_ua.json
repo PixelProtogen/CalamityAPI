@@ -1,0 +1,4 @@
+{
+  "gamerule.forceShaderRender.description": "Якщо ввімкнено, шейдери змушують відтворюватися, навіть якщо вони не відображаються нормально. [F4]",
+  "gamerule.forceShaderRender": "Примусовий рендеринг шейдерів [CalamityAPI]"
+}

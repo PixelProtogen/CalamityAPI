@@ -33,9 +33,10 @@ public class AdvancedPostPass {
         this.updateable = updateable;
     }
 
-    public EffectInstance effect() {
-        return this.pass.getEffect();
-    }
+	@Nullable
+	public EffectInstance effect() {
+	    return this.pass != null ? this.pass.getEffect() : null;
+	}
 
 	public int sampler(String sampler, ResourceLocation location) {
 	    try (InputStream stream = Minecraft.getInstance().getResourceManager().open(location);
