@@ -3,3 +3,4 @@ CalamityAPI is a modding API for post processing effects ( shaders ) for minecra
 
 NOTE: Im not experienced with JAVA or Minecraft code so any fixes and improvements / tips or any sort of help is welcome!
 
+!WARNING! THIS MOD IS NOT AVAILABLE ONLINE RIGHT NOW AND IS UNDER DEVELOPEMENT !WARNING!
