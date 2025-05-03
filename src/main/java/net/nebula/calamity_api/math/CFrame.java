@@ -9,6 +9,7 @@ import org.joml.Vector2f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec2;
 import javax.annotation.Nullable;
+import org.joml.Quaternionf;
 
 public class CFrame {
 	private Vector3f position;
@@ -37,37 +38,38 @@ public class CFrame {
 	@OnlyIn(Dist.CLIENT)
 	public Vector3f worldToScreenPoint(Vector3f worldPos, float maxDistance) {
 		Vec2 screenSize = getScreenSize();
-		float fovDegrees = (float) getFOV();
 		float aspectRatio = screenSize.x / screenSize.y;
-		float fovRadians = (float) Math.toRadians(fovDegrees);
+		float fov = getFOV();
+		float fovY = (float) Math.toRadians(fov + (fov / 10F));
 		float nearPlane = 0.1f;
-		
+	
 		Vector3f toPoint = new Vector3f(worldPos);
 		toPoint.sub(this.position);
 	
 		float camX = toPoint.dot(this.leftVector);
-		float camY = toPoint.dot(this.upVector  );
+		float camY = toPoint.dot(this.upVector);
 		float camZ = toPoint.dot(this.lookVector);
 	
-		if (camZ <= nearPlane || camZ > maxDistance ) {
-			return new Vector3f(0F,0F,-1F);
+		if (camZ <= nearPlane || camZ > maxDistance) {
+			return new Vector3f(0F, 0F, -1F);
 		}
 	
-		float scale = (float) (1.0 / Math.tan(fovRadians / 2.0));
-		float projX = (camX / camZ) * scale / aspectRatio;
-		float projY = (camY / camZ) * scale;
-		
+		float fovX = 2.0f * (float) Math.atan(Math.tan(fovY / 2.0f) * aspectRatio);
+	
+		float projX = (camX / camZ) / (float) Math.tan(fovX / 2.0f);
+		float projY = (camY / camZ) / (float) Math.tan(fovY / 2.0f);
+	
 		float screenX = (1.0f - projX) * 0.5f;
 		float screenY = (projY + 1.0f) * 0.5f;
 	
 		return new Vector3f(screenX, screenY, camZ);
 	}
 
-	private static Vector3f Vec3ToVec3f(Vec3 v3) {
+	public static Vector3f Vec3ToVec3f(Vec3 v3) {
 		return new Vector3f((float) v3.x,(float) v3.y,(float) v3.z);
 	}
 
 	public static CFrame Camera(Camera camera) {
 		return new CFrame(Vec3ToVec3f(camera.getPosition()),camera.getUpVector(),camera.getLookVector(),camera.getLeftVector());
 	}
-}
+}

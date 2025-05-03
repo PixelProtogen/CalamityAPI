@@ -15,14 +15,22 @@ import org.slf4j.Logger;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.nebula.calamity_api.math.CFrame;
+import net.minecraft.world.phys.Vec2;
 
 @OnlyIn(Dist.CLIENT)
 public class CalamityUtils {
 	private static final Logger LOGGER = LogUtils.getLogger();
 
-	public static float depthToValue(float depth, float maxDepth, float minValue) {
-	    if (depth >= maxDepth || depth <= 0) return -1F;
-	    return Math.max(depth,minValue) / maxDepth;
+	public static float worldSpaceSize(float depth, float size) {
+		Minecraft mc = Minecraft.getInstance();
+		Vec2 screenSize = new Vec2(mc.getWindow().getWidth(), mc.getWindow().getHeight());
+		float fovDegrees = mc.options.fov().get();
+		float fovRadians = (float) Math.toRadians(fovDegrees);
+	
+		float pixelsPerUnit = screenSize.y / (2.0f * depth * (float)Math.tan(fovRadians / 2.0));
+		
+		float screenSizePixels = size * pixelsPerUnit;
+		return screenSizePixels / screenSize.y;
 	}
 	
 	public static Vector3f worldToScreenPoint(Vector3f worldPos, float MaxDist) {

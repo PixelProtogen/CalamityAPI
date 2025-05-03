@@ -27,6 +27,8 @@ import java.lang.reflect.Field;
 import net.nebula.calamity_api.network.CalamityAPIGamerules;
 import com.mojang.blaze3d.systems.RenderSystem;
 import javax.annotation.Nullable;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class ShaderCore {
@@ -40,6 +42,10 @@ public class ShaderCore {
     private static final Map<String, AdvancedPostPass> registered = new HashMap<>();
     private static final Map<String, AdvancedPostPass> active = new HashMap<>();
     private static final Map<String, Boolean> lastState = new HashMap<>();
+
+    private static long lastRebuild = 0;
+	private static final long REBUILD_COOLDOWN_MS = 100;
+	private static boolean pendingRebuild = false;
 
     private static boolean forceEnabled = true;
     @Nullable
@@ -80,58 +86,71 @@ public class ShaderCore {
         }
     }
 
-    @SubscribeEvent
-    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (!canRun(event.player)) {
-            if (mc == null) mc = Minecraft.getInstance();
-            if (gr == null && mc != null) gr = mc.gameRenderer;
-            return;
-        }
-
-        if (forceEnabled) setRenderTrueIfNot();
-
-        if (event.phase == TickEvent.Phase.END) {
-            RenderSystem.recordRenderCall(() -> {
-                if (gr.currentEffect() == null) {
-                    rebuildChainIfNeeded(true);
-                } else if (gr.currentEffect() != null && effect != null) {
-                    rebuildChainIfNeeded(false);
-                }
-            });
-        }
-    }
+	@SubscribeEvent
+	public static void onRenderLevelStage(RenderLevelStageEvent event) {
+		if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
+			if (mc == null) mc = Minecraft.getInstance();
+			if (gr == null) gr = mc.gameRenderer;
+		
+			if (!canRun(mc.player)) return;
+		
+			if (forceEnabled) setRenderTrueIfNot();
+		
+			if (gr.currentEffect() == null) {
+				rebuildChainIfNeeded(true);
+			} else if (effect != null) {
+				rebuildChainIfNeeded(false);
+			}
+		}
+	}
 
     public static void reload() {
     	gr.shutdownEffect();
     }
 
-    private static void rebuildChainIfNeeded(boolean forceRebuild) {
-        boolean needsRebuild = forceRebuild;
-        
-        for (Map.Entry<String, AdvancedPostPass> entry : active.entrySet()) {
-            AdvancedPostPass pass = entry.getValue();
-            boolean shouldEnable = pass.func().apply(pass);
-            boolean last = lastState.getOrDefault(pass.shader(), false);
-            if (shouldEnable != last) {
-                needsRebuild = true;
-                //LOGGER.info("[CalamityAPI] Rebuild required.");
-            }
-            lastState.put(pass.shader(), shouldEnable);
-        }
-
-        if (needsRebuild) {
-        	gr.shutdownEffect();
-            gr.loadEffect(coreShader);
-            PostChain chain = gr.currentEffect();
-            effect = new AdvancedEffectInstance(chain);
-            for (Map.Entry<String, AdvancedPostPass> entry : registered.entrySet()) {
-                if (lastState.getOrDefault(entry.getKey(), false)) {
-                	//LOGGER.info("[CalamityAPI] Adding " + entry.getKey() );
-                	active.put(entry.getKey(), effect.Add(entry.getKey(), entry.getValue().func(), entry.getValue().updateable()));
-                }
-            }
-            effect.End(endProgram);
-            chain.resize(mc.getWindow().getWidth(), mc.getWindow().getHeight());
-        }
-    }
+	private static void rebuildChainIfNeeded(boolean forceRebuild) {
+	    boolean needsRebuild = forceRebuild;
+	
+	    for (Map.Entry<String, AdvancedPostPass> entry : active.entrySet()) {
+	        AdvancedPostPass pass = entry.getValue();
+	        boolean shouldEnable = pass.func().apply(pass);
+	        boolean last = lastState.getOrDefault(pass.shader(), false);
+	        if (shouldEnable != last) {
+	            needsRebuild = true;
+	        }
+	        lastState.put(pass.shader(), shouldEnable);
+	    }
+	
+	    long now = System.currentTimeMillis();
+	
+	    if (needsRebuild) {
+	        if (forceRebuild || now - lastRebuild >= REBUILD_COOLDOWN_MS) {
+	            doRebuild();
+	            lastRebuild = now;
+	            pendingRebuild = false;
+	        } else {
+	            pendingRebuild = true;
+	        }
+	    } else if (pendingRebuild && now - lastRebuild >= REBUILD_COOLDOWN_MS) {
+	        doRebuild();
+	        lastRebuild = now;
+	        pendingRebuild = false;
+	    }
+	}
+	
+	private static void doRebuild() {
+	    gr.shutdownEffect();
+	    gr.loadEffect(coreShader);
+	    PostChain chain = gr.currentEffect();
+	    effect = new AdvancedEffectInstance(chain);
+	
+	    for (Map.Entry<String, AdvancedPostPass> entry : registered.entrySet()) {
+	        if (lastState.getOrDefault(entry.getKey(), false)) {
+	            active.put(entry.getKey(), effect.Add(entry.getKey(), entry.getValue().func(), entry.getValue().updateable()));
+	        }
+	    }
+	
+	    effect.End(endProgram);
+	    chain.resize(mc.getWindow().getWidth(), mc.getWindow().getHeight());
+	}
 }
