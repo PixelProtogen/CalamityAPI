@@ -115,6 +115,19 @@
         ]
       },
       "path": "~/math"
+    },
+    {
+      "name": "PlayerFOV",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "player_fov",
+      "metadata": {
+        "files": [
+          "src/main/java/net/nebula/calamity_api/PlayerFOV.java"
+        ]
+      },
+      "path": "~/client"
     }
   ],
   "variable_elements": [

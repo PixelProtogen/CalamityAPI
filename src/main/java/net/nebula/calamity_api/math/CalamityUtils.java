@@ -17,6 +17,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.nebula.calamity_api.math.CFrame;
 import net.minecraft.world.phys.Vec2;
 
+import net.nebula.calamity_api.client.PlayerFOV;
+
 @OnlyIn(Dist.CLIENT)
 public class CalamityUtils {
 	private static final Logger LOGGER = LogUtils.getLogger();
@@ -35,15 +37,14 @@ public class CalamityUtils {
 	
 	public static Vector3f worldToScreenPoint(Vector3f worldPos, float MaxDist) {
 		Minecraft mc = Minecraft.getInstance();
-		CFrame cf = CFrame.Camera(mc.gameRenderer.getMainCamera());
-		Vector3f result = cf.worldToScreenPoint(worldPos,MaxDist);
+		Camera cam = mc.gameRenderer.getMainCamera();
+		CFrame cf = CFrame.Camera(cam);
+		Vector3f result = cf.worldToScreenPoint(worldPos,MaxDist,PlayerFOV.getCurrentFov());
 		return result;
 	}
 
 	public static boolean inScreenBounds(Vector3f worldPos) {
-		Minecraft mc = Minecraft.getInstance();
-		CFrame cf = CFrame.Camera(mc.gameRenderer.getMainCamera());
-		Vector3f result = cf.worldToScreenPoint(worldPos,2048F);
+		Vector3f result = worldToScreenPoint(worldPos,2048F);
 		return result.z > -1F;
 	}
 

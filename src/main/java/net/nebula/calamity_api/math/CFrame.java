@@ -9,8 +9,22 @@ import org.joml.Vector2f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec2;
 import javax.annotation.Nullable;
-import org.joml.Quaternionf;
 
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.world.entity.Entity;
+import net.minecraftforge.client.ForgeHooksClient;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import net.minecraft.client.player.AbstractClientPlayer;
+
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.material.FogType;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.client.player.LocalPlayer;
+
+@OnlyIn(Dist.CLIENT)
 public class CFrame {
 	private Vector3f position;
 	private Vector3f upVector;
@@ -24,23 +38,16 @@ public class CFrame {
 		this.leftVector = leftVector;
 	}
 
-	@OnlyIn(Dist.CLIENT)
 	private Vec2 getScreenSize() {
 		Minecraft mc = Minecraft.getInstance();
 		return new Vec2(mc.getWindow().getWidth(),mc.getWindow().getHeight());
 	}
-
+	
 	@OnlyIn(Dist.CLIENT)
-	private int getFOV() {
-		return Minecraft.getInstance().options.fov().get();
-	}
-
-	@OnlyIn(Dist.CLIENT)
-	public Vector3f worldToScreenPoint(Vector3f worldPos, float maxDistance) {
+	public Vector3f worldToScreenPoint(Vector3f worldPos, float maxDistance,float FOV) {
 		Vec2 screenSize = getScreenSize();
 		float aspectRatio = screenSize.x / screenSize.y;
-		float fov = getFOV();
-		float fovY = (float) Math.toRadians(fov + (fov / 10F));
+		float fovY = (float) Math.toRadians(FOV);
 		float nearPlane = 0.1f;
 	
 		Vector3f toPoint = new Vector3f(worldPos);
