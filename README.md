@@ -80,3 +80,5 @@ Example code for shattered screen effect:
 			return true;
 		}, false);
 ```
+
+NOTE: Im not experienced with JAVA or Minecraft code so any fixes and improvements / tips or any sort of help is welcome!
