@@ -2,6 +2,7 @@
 CalamityAPI is a modding API for post processing effects ( shaders ) for minecraft 1.20.1 FORGE
 
 NOTE: Im not experienced with JAVA or Minecraft code so any fixes and improvements / tips or any sort of help is welcome!
+NOTE2: This mod might be not compatable with optimization mods like Rubidium. Further testing needed!
 
 SETUP:
 
