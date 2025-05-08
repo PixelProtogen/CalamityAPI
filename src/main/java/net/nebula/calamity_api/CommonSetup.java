@@ -17,15 +17,8 @@ import net.minecraft.resources.ResourceLocation;
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class CommonSetup {
 
-	@SubscribeEvent
-	public static void onSetup(ShaderCore.REGISTER event) {
-		
-//		event.register("calamity_api:advanced/black_hole", effect -> {
-//			Vector3f pos = CalamityUtils.worldToScreenPoint(new Vector3f(0.5F,5.5F,0.5F),32F);
-//		    float Depth = CalamityUtils.depthToValue(pos.z,32F,0F);
-//		    effect.effect().safeGetUniform("Data").set(pos.x,pos.y, (1F - Depth) * 0.5F);
-//		    return Depth > 0;
-//		}, true);
+//	@SubscribeEvent
+//	public static void onSetup(ShaderCore.REGISTER event) {
 //
 //		event.register("calamity_api:simple/color_clamp", effect -> {
 //			effect.effect().safeGetUniform("Data").set(0.08F,0.91F,0F);
@@ -37,15 +30,16 @@ public class CommonSetup {
 //			return true;
 //		}, false);
 //
-		event.register("calamity_api:advanced/black_hole", effect -> {
-			Vector3f pos = CalamityUtils.worldToScreenPoint(new Vector3f(0.5F, 5.5F, 0.5F), 64F);
-			if (pos.z <= 0) return false;
-		
-			float screenSize = CalamityUtils.worldSpaceSize(pos.z, 1.0F);
-			effect.effect().safeGetUniform("Data").set(pos.x, pos.y, screenSize);
-			return true;
-		}, true);
-		
-	}
+//		event.register("calamity_api:advanced/black_hol", effect -> {
+//			Vector3f at = new Vector3f(0.5F, 5.5F, 0.5F);
+//			Vector3f pos = CalamityUtils.worldToScreenPoint(at, 64F);
+//			if (pos.z <= 0 || !CalamityUtils.inView(at)) return false;
+//		
+//			float screenSize = CalamityUtils.worldSpaceSize(pos.z, 1.0F);
+//			effect.effect().safeGetUniform("Data").set(pos.x, pos.y, screenSize);
+//			return true;
+//		}, true);
+//		
+//	}
 }
 

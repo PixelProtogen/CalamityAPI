@@ -18,8 +18,8 @@ void main() {
     // Smooth falloff based on distance
     float falloff = smoothstep(Data.z, 0.0, dist);
 
-    // Distortion animation
-    float wave = sin((texCoord.y + Time * 1.5) * 40.0) * 0.005;
+    // Distortion animation: slower speed and more waves
+    float wave = sin((texCoord.y + Time * 0.3) * 120.0) * 0.005;
 
     // Apply falloff to distortion
     vec2 distortion = vec2(wave * falloff, 0.0);
