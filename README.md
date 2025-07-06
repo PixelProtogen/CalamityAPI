@@ -15,7 +15,7 @@ import net.nebula.calamity_api.math.CalamityUtils;
 ShaderCore.REGISTER (1.1.0+)<br/>
 main event that handles registraction of shaders<br/>
 event contains register function that returns int ID of shader 
-```
+```java
 int shaderId = event.register(String shader, Function<AdvancedPostPass, Boolean> context, boolean updateOnTick,@Nullable EditType editType, @Nullable Boolean toggleable);
 ```
 see below for more context
@@ -40,7 +40,7 @@ HOW TO USE (1.1.0+)
 ShaderCore.POST<br/>
 second event that is fired shortly after `ShaderCore.REGISTER`<br/>
 ITERATE FUNCTION:
-```
+```java
 	@SubscribeEvent
 	public static void onPost(ShaderCore.POST event) {
 		event.iterate(effect -> {
@@ -53,25 +53,25 @@ ITERATE FUNCTION:
 
 ShaderCore FUNCTIONS:
 (1.1.0+)
-```
+```java
 boolean success_force = ShaderCore.forceShaderUpdate(ShaderId); // forces a shader to run its function and return result of it
 
 boolean succes_function = ShaderCore.editShader(ShaderId,effect -> { return false; }); // replaces shader function with new one if allowed by EditType
 boolean succes_update = ShaderCore.editShader(ShaderId,false); // replaces shader update with new one if allowed by EditType
 boolean success_disable = ShaderCore.editShaderToggle(ShaderId,false); // sets working State of shader if allowed by EditType
 
-boolean is_working = isShaderEnabled(ShaderId); // checks if shader is enabled or disabled (editShaderToggle)
+boolean is_working = ShaderCore.isShaderEnabled(ShaderId); // checks if shader is enabled or disabled (editShaderToggle)
 ```
 Any edit via editShader and editShaderToggle require `ShaderCore.reload()` to work properly
 
 (1.0.0+)
-```
+```java
 ShaderCore.reload(); // Forced ShaderCore to reload whole shader program
 ShaderCore.setForced(true); // Forces shaders to be always ON (if player decided to turn it by pressing F4). Usually handled by gamerule
 ```
 
 AVAILABLE EditType's (1.1.0+)
-```
+```java
 FIXED // Cannot Edit
 UPDATEABLE // Can only change updateOnTick
 FUNCTION // Can only change effect function
