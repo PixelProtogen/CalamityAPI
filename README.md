@@ -72,11 +72,11 @@ ShaderCore.setForced(true); // Forces shaders to be always ON (if player decided
 
 AVAILABLE EditType's (1.1.0+)
 ```java
-FIXED // Cannot Edit
-UPDATEABLE // Can only change updateOnTick
-FUNCTION // Can only change effect function
-TOGGLE // Can only change toggleable option for shader
-ALL // Can Edit Anything
+ShaderCore.EditType.FIXED // Cannot Edit
+ShaderCore.EditType.UPDATEABLE // Can only change updateOnTick
+ShaderCore.EditType.FUNCTION // Can only change effect function
+ShaderCore.EditType.TOGGLE // Can only change toggleable option for shader
+ShaderCore.EditType.ALL // Can Edit Anything
 ```
 Keep in mind that any other source can edit shader if EditType allows it to
 
