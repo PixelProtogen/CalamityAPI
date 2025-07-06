@@ -77,6 +77,10 @@ ShaderCore.EditType.UPDATEABLE // Can only change updateOnTick
 ShaderCore.EditType.FUNCTION // Can only change effect function
 ShaderCore.EditType.TOGGLE // Can only change toggleable option for shader
 ShaderCore.EditType.ALL // Can Edit Anything
+
+ShaderCore.EditType.UPDT_FUNC // UPDATEABLE + FUNCTION
+ShaderCore.EditType.UPDT_TOGL // UPDATEABLE + TOGGLE
+ShaderCore.EditType.FUNC_TOGL // FUNCTION + TOGGLE
 ```
 Keep in mind that any other source can edit shader if EditType allows it to
 
