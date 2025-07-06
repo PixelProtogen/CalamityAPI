@@ -22,6 +22,9 @@ public class AdvancedEffectInstance {
     private final PostChain MainChain;
     private final PostPass MainPass;
 
+	/*
+	 * This works fine i guess
+	 */
     @SuppressWarnings("unchecked")
     private static List<PostPass> getPasses(PostChain chain) {
         try {
@@ -35,10 +38,13 @@ public class AdvancedEffectInstance {
 
     public AdvancedEffectInstance(PostChain chain) {
         this.MainChain = chain;
-        this.MainPass = getPasses(chain).get(0);
+        this.MainPass = getPasses(chain).get(0); //Gets main Pass
         this.last = "swap";
     }
 
+	/*
+	 * Creates new target for each Pass (effect)
+	 */
 	private RenderTarget next() {
 	    int number = last != null && last.length() > 4 ? last.substring(4).matches("\\d+") ? Integer.parseInt(last.substring(4)) + 1 : 1 : 1;
 	    String target = "auto" + number;
@@ -47,6 +53,9 @@ public class AdvancedEffectInstance {
 	    return MainChain.getTempTarget(target);
 	}
 
+	/*
+	 * Finalizes Effect Instance
+	 */
     public void End(String endType) {
         try {
             this.MainChain.addPass(endType, this.MainChain.getTempTarget(last), this.MainPass.inTarget);

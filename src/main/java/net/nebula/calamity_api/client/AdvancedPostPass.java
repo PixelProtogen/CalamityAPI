@@ -26,6 +26,9 @@ public class AdvancedPostPass {
     private final boolean updateable;
     private final List<Integer> sampledTextures = new ArrayList<>();
 
+	/*
+	 * custom Pass instance to store data
+	 */
     public AdvancedPostPass(String shader, @Nullable PostPass pass, Function<AdvancedPostPass, Boolean> func, boolean updateable) {
         this.shader = shader;
         this.pass = pass;
@@ -38,6 +41,9 @@ public class AdvancedPostPass {
 	    return this.pass != null ? this.pass.getEffect() : null;
 	}
 
+	/*
+	 * Loads Samplers from ResourceLocation. You technically can use safeGetUniform but whatever
+	 */
 	public int sampler(String sampler, ResourceLocation location) {
 	    try (InputStream stream = Minecraft.getInstance().getResourceManager().open(location);
 	         NativeImage image = NativeImage.read(stream)) {
@@ -57,7 +63,11 @@ public class AdvancedPostPass {
 	        return -1;
 	    }
 	}
-	
+
+	/*
+	 * Do not fire unless you know what youre doing
+	 * Unbinds loaded sampler textures
+	 */
     public void release() {
         for (int textureId : this.sampledTextures) {
             TextureUtil.releaseTextureId(textureId);

@@ -173,13 +173,17 @@
       {
         "name": "math",
         "children": []
+      },
+      {
+        "name": "Test",
+        "children": []
       }
     ]
   },
   "workspaceSettings": {
     "modid": "calamity_api",
     "modName": "CalamityAPI",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Modding API for flexable shaders usage and other utils. This mod is also inspired by Lucille Karma\u0027s Wraith Of The God\u0027s Mod (Terraria)",
     "author": "Nebula (PixelProtogen)",
     "websiteURL": "https://mcreator.net",
