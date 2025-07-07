@@ -128,6 +128,19 @@
         ]
       },
       "path": "~/client"
+    },
+    {
+      "name": "ClientShaderCoreReload",
+      "type": "command",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "client_shader_core_reload",
+      "metadata": {
+        "files": [
+          "src/main/java/net/nebula/calamity_api/command/ClientShaderCoreReloadCommand.java"
+        ]
+      },
+      "path": "~/utils"
     }
   ],
   "variable_elements": [

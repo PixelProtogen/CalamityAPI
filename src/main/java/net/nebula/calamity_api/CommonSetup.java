@@ -13,6 +13,7 @@ import net.nebula.calamity_api.math.CalamityUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import com.ibm.icu.impl.Pair;
+import net.minecraft.client.CameraType;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class CommonSetup {
@@ -32,6 +33,7 @@ public class CommonSetup {
 //		}, false, ShaderCore.EditType.ALL, true);
 
 //		event.register("calamity_api:advanced/black_hole", effect -> {
+//			if (CalamityUtils.getCameraType() == CameraType.THIRD_PERSON_FRONT) return false;
 //			Vector3f at = new Vector3f(0.5F, 5.5F, 0.5F);
 //			Vector3f pos = CalamityUtils.worldToScreenPoint(at, 64F);
 //			if (pos.z <= 0 || !CalamityUtils.inView(at)) return false;
@@ -39,7 +41,7 @@ public class CommonSetup {
 //			float screenSize = CalamityUtils.worldSpaceSize(pos.z, 1.0F);
 //			effect.effect().safeGetUniform("Data").set(pos.x, pos.y, screenSize);
 //			return true;
-//		}, true);
+//		}, true, ShaderCore.EditType.ALL, true);
 		
 	}
 

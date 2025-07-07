@@ -19,6 +19,7 @@ import net.minecraft.world.phys.Vec2;
 
 import net.nebula.calamity_api.client.PlayerFOV;
 import net.minecraft.world.level.Level;
+import net.minecraft.client.CameraType;
 
 @OnlyIn(Dist.CLIENT)
 public class CalamityUtils {
@@ -77,6 +78,10 @@ public class CalamityUtils {
 	    }
 	
 	    return true;
+	}
+
+	public static CameraType getCameraType() {
+		return Minecraft.getInstance().options.getCameraType();
 	}
 
 	public static Vector3f worldToScreenPoint(BlockPos pos, float MaxDist) {

@@ -256,8 +256,7 @@ public class ShaderCore {
 	 * Forces minecraft to shutdown effect resulting in ShaderCore making new instance of effect
 	 */
     public static void reload() {
-    	if (gr != null)
-    		gr.shutdownEffect();
+    	if (gr != null) gr.shutdownEffect();
     }
 
 	/*
@@ -271,14 +270,15 @@ public class ShaderCore {
 			if (disabledShaders.getOrDefault(id, false)) continue;
 
 	    	AdvancedPostPass pass = entry.getValue();
-			if (pass.updateable()) {
-		        boolean shouldEnable = pass.func().apply(pass);
-		        boolean last = lastState.getOrDefault(id, false);
-		        if (shouldEnable != last) {
-		            needsRebuild = true;
-		        }
-		        lastState.put(id, shouldEnable);
+
+			boolean shouldEnable = pass.func().apply(pass);
+			boolean last = lastState.getOrDefault(id, false);
+			
+			if (shouldEnable != last && pass.updateable()) {
+			    needsRebuild = true;
 			}
+			
+			lastState.put(id, shouldEnable);
 	    }
 	
 	    long now = System.currentTimeMillis();
@@ -310,7 +310,7 @@ public class ShaderCore {
 	    if (chain == null) return;
 
 	    effect = new AdvancedEffectInstance(chain);
-	    active.clear();
+	    //active.clear();
 	
 	    for (Map.Entry<Integer, AdvancedPostPass> entry : registered.entrySet()) {
 	        int id = entry.getKey();
