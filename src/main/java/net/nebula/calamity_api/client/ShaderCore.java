@@ -214,6 +214,8 @@ public class ShaderCore {
 	 * Forces effect render to always be true if enabled
 	 * This works fine i guess
 	 */
+	@OnlyIn(Dist.CLIENT)
+	@SuppressWarnings("unchecked")
     private static void setRenderTrueIfNot() {
         if (mc != null && gr != null) {
             try {
