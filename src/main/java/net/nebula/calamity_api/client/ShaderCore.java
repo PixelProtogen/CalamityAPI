@@ -240,6 +240,7 @@ public class ShaderCore {
 				rebuildChainIfNeeded(true);
 			} else if (targetEffect != null) {
 				if (isShaderProgramEnabled) {
+					resize();
 					targetEffect.process(event.getRenderTick());
 					mc.getMainRenderTarget().bindWrite(true);
 				} else {
@@ -258,6 +259,11 @@ public class ShaderCore {
          targetEffect.close();
       }
       targetEffect = null;
+    }
+
+    public static void resize() {
+    	if (targetEffect != null)
+    		targetEffect.resize(mc.getWindow().getWidth(), mc.getWindow().getHeight());
     }
 
 	/*
