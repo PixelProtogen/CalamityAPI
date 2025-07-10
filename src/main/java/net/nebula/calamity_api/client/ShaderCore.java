@@ -31,6 +31,8 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import java.util.List;
 import java.util.ArrayList;
 import com.ibm.icu.impl.Pair;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 
 // Idk why i added to add some notes to stuff but yea
 
@@ -39,15 +41,28 @@ public class ShaderCore {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static Minecraft mc;
     private static GameRenderer gr;
-
+	private static boolean firstRun = true;
+    private static long lastRebuild = 0;
+	private static final long REBUILD_COOLDOWN_MS = 100;
+	private static boolean pendingRebuild = false;
+    private static boolean isShaderProgramEnabled = true;
+    private static boolean forceEnabled = true;
+    @Nullable
+    private static PostChain targetEffect;
+    @Nullable
+    private static AdvancedEffectInstance effect;
     private static final ResourceLocation coreShader = new ResourceLocation("calamity_api:shaders/post/blank.json");
 	private static final String endProgram = "blit";
-
-	/*
-	 * Enum that controls what you can edit about specific shader effect/s
-	 */
 	public enum EditType { FIXED, UPDATEABLE, FUNCTION, TOGGLE, ALL, UPDT_FUNC, UPDT_TOGL, FUNC_TOGL; }
-	private static boolean editTypeReq(EditType editType, EditType targetEditType) {
+	private static int gameLoadedShaders = 0;
+	private static final Map<Integer, EditType> shaderAccessibility = new HashMap<>();
+    private static final Map<Integer, String> registeredShaderIds = new HashMap<>();
+    private static final Map<Integer, AdvancedPostPass> registered = new HashMap<>();
+    private static final Map<Integer, AdvancedPostPass> active = new HashMap<>();
+    private static final Map<Integer, Boolean> lastState = new HashMap<>();
+    private static final Map<Integer, Boolean> disabledShaders = new HashMap<>();
+
+    private static boolean editTypeReq(EditType editType, EditType targetEditType) {
 		return switch (editType) {
 			case FIXED -> false;
 			case UPDATEABLE -> targetEditType == EditType.UPDATEABLE || targetEditType == EditType.UPDT_FUNC || targetEditType == EditType.UPDT_TOGL || targetEditType == EditType.ALL;
@@ -59,23 +74,6 @@ public class ShaderCore {
 			case ALL -> true;
 		};
 	}
-
-	// Primary Data On Effects
-	private static int gameLoadedShaders = 0;
-	private static final Map<Integer, EditType> shaderAccessibility = new HashMap<>();
-    private static final Map<Integer, String> registeredShaderIds = new HashMap<>();
-    private static final Map<Integer, AdvancedPostPass> registered = new HashMap<>();
-    private static final Map<Integer, AdvancedPostPass> active = new HashMap<>();
-    private static final Map<Integer, Boolean> lastState = new HashMap<>();
-    private static final Map<Integer, Boolean> disabledShaders = new HashMap<>();
-
-    private static long lastRebuild = 0;
-	private static final long REBUILD_COOLDOWN_MS = 100;
-	private static boolean pendingRebuild = false;
-
-    private static boolean forceEnabled = true;
-    @Nullable
-    private static AdvancedEffectInstance effect;
 	
     public static class REGISTER extends Event {
     	/*
@@ -210,35 +208,27 @@ public class ShaderCore {
         forceEnabled = value;
     }
 
-	/*
-	 * Forces effect render to always be true if enabled
-	 * This works fine i guess
-	 */
-	@OnlyIn(Dist.CLIENT)
-	@SuppressWarnings("unchecked")
-    private static void setRenderTrueIfNot() {
-        if (mc != null && gr != null) {
-            try {
-                Field field = GameRenderer.class.getDeclaredField("effectActive");
-                field.setAccessible(true);
-                boolean res = (boolean) field.get(gr);
-                if (!res) field.set(gr, true);
-            } catch (Exception e) {
-                throw new RuntimeException("[CalamityAPI] Failed to force render", e);
-            }
-        }
+    public static void toggleRender() {
+    	if (forceEnabled == true) {
+    		isShaderProgramEnabled = true;
+    	} else {
+    		isShaderProgramEnabled = !isShaderProgramEnabled;
+    	}
     }
 
-	private static boolean firstRun = true;
+    public static boolean getRenderState() {
+    	return isShaderProgramEnabled;
+    }
+
 	@SubscribeEvent
 	public static void onRenderLevelStage(RenderLevelStageEvent event) {
-		if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
+		if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_LEVEL) {
 			if (mc == null) mc = Minecraft.getInstance();
 			if (gr == null) gr = mc.gameRenderer;
 		
 			if (!canRun(mc.player)) return;
-		
-			if (forceEnabled) setRenderTrueIfNot();
+			
+			//if (forceEnabled) setRenderTrueIfNot();
 			
 			if (firstRun) {
 				MinecraftForge.EVENT_BUS.post(new POST(registeredShaderIds));
@@ -246,9 +236,15 @@ public class ShaderCore {
         		firstRun = false;
 			}
 		
-			if (gr.currentEffect() == null) {
+			if (targetEffect == null && isShaderProgramEnabled) {
 				rebuildChainIfNeeded(true);
-			} else if (effect != null) {
+			} else if (targetEffect != null) {
+				if (isShaderProgramEnabled) {
+					targetEffect.process(event.getRenderTick());
+					mc.getMainRenderTarget().bindWrite(true);
+				} else {
+					reload();
+				}
 				rebuildChainIfNeeded(false);
 			}
 		}
@@ -258,7 +254,10 @@ public class ShaderCore {
 	 * Forces minecraft to shutdown effect resulting in ShaderCore making new instance of effect
 	 */
     public static void reload() {
-    	if (gr != null) gr.shutdownEffect();
+      if (targetEffect != null) {
+         targetEffect.close();
+      }
+      targetEffect = null;
     }
 
 	/*
@@ -300,18 +299,28 @@ public class ShaderCore {
 	    }
 	}
 
+	private static PostChain makePostChain(RenderTarget mainRenderTarget) {
+		try {
+			return new PostChain(mc.getTextureManager(), mc.getResourceManager(), mainRenderTarget, coreShader);
+		} catch (IOException e) {
+			throw new RuntimeException("[CalamityAPI] Failed to create PostChain", e);
+		}
+	}
+
 	/*
 	 * Rebuilds whole effect
 	 */
 	private static void doRebuild() {
 	    if (gr == null || mc == null) return;
 
-	    gr.shutdownEffect();
-	    gr.loadEffect(coreShader);
-	    PostChain chain = gr.currentEffect();
+		RenderTarget mainRenderTarget = mc.getMainRenderTarget();
+		int windowX = mc.getWindow().getWidth();
+		int windowY = mc.getWindow().getHeight();
+	    
+	    PostChain chain = makePostChain(mainRenderTarget);
 	    if (chain == null) return;
-
-	    effect = new AdvancedEffectInstance(chain);
+	    chain.resize(windowX, windowY);
+	    effect = new AdvancedEffectInstance(chain,mainRenderTarget,windowX,windowY);
 	    //active.clear();
 	
 	    for (Map.Entry<Integer, AdvancedPostPass> entry : registered.entrySet()) {
@@ -327,5 +336,6 @@ public class ShaderCore {
 	
 	    effect.End(endProgram);
 	    chain.resize(mc.getWindow().getWidth(), mc.getWindow().getHeight());
+	    targetEffect = chain;
 	}
 }

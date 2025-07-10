@@ -1,4 +1,6 @@
 {
   "gamerule.forceShaderRender.description": "Якщо ввімкнено, шейдери змушують відтворюватися, навіть якщо вони не відображаються нормально. [F4]",
-  "gamerule.forceShaderRender": "Примусовий рендеринг шейдерів [CalamityAPI]"
+  "key.categories.calamity_api": "CalamityAPI",
+  "gamerule.forceShaderRender": "Примусовий рендеринг шейдерів [CalamityAPI]",
+  "key.calamity_api.toggle_shader_effects": "Увімкнути/вимкнути ефект шейдера"
 }

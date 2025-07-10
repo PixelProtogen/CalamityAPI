@@ -1,4 +1,6 @@
 {
   "gamerule.forceShaderRender.description": "If enabled, forces shaders to render even if they are not normally rendered. [F4]",
-  "gamerule.forceShaderRender": "Force Shader Rendering [CalamityAPI]"
+  "key.categories.calamity_api": "CalamityAPI",
+  "gamerule.forceShaderRender": "Force Shader Rendering [CalamityAPI]",
+  "key.calamity_api.toggle_shader_effects": "Toggle Shader Effect"
 }

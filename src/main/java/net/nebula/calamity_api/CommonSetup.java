@@ -17,7 +17,7 @@ import net.minecraft.client.CameraType;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class CommonSetup {
-//	static int id0 = 0;
+	static int id0 = 0;
 
 	@SubscribeEvent
 	public static void onSetup(ShaderCore.REGISTER event) {

@@ -20,7 +20,10 @@ public class AdvancedEffectInstance {
     private final List<AdvancedPostPass> passes = Lists.newArrayList();
     private String last = "";
     private final PostChain MainChain;
-    private final PostPass MainPass;
+
+	private RenderTarget mainTarget;
+    private int X;
+    private int Y;
 
 	/*
 	 * This works fine i guess
@@ -32,14 +35,18 @@ public class AdvancedEffectInstance {
             field.setAccessible(true);
             return (List<PostPass>) field.get(chain);
         } catch (Exception e) {
-            throw new RuntimeException("[CalamityAPI] Failed to access passes", e);
+            System.out.println("[CalamityAPI] Failed to access passes");
+            return null;
         }
     }
 
-    public AdvancedEffectInstance(PostChain chain) {
+    public AdvancedEffectInstance(PostChain chain,RenderTarget mainTarget,int X,int Y) {
         this.MainChain = chain;
-        this.MainPass = getPasses(chain).get(0); //Gets main Pass
+        
         this.last = "swap";
+        this.mainTarget = mainTarget;
+        this.X = X;
+        this.Y = Y;
     }
 
 	/*
@@ -48,7 +55,7 @@ public class AdvancedEffectInstance {
 	private RenderTarget next() {
 	    int number = last != null && last.length() > 4 ? last.substring(4).matches("\\d+") ? Integer.parseInt(last.substring(4)) + 1 : 1 : 1;
 	    String target = "auto" + number;
-	    MainChain.addTempTarget(target, MainPass.inTarget.width, MainPass.inTarget.height);
+	    MainChain.addTempTarget(target, this.X,this.Y);
 	    last = target;
 	    return MainChain.getTempTarget(target);
 	}
@@ -58,7 +65,7 @@ public class AdvancedEffectInstance {
 	 */
     public void End(String endType) {
         try {
-            this.MainChain.addPass(endType, this.MainChain.getTempTarget(last), this.MainPass.inTarget);
+            this.MainChain.addPass(endType, this.MainChain.getTempTarget(last), this.mainTarget);
         } catch (IOException e) {
             throw new RuntimeException("[CalamityAPI] Unable to finalize shader", e);
         }
