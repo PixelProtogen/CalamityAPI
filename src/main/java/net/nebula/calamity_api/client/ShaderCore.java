@@ -62,7 +62,7 @@ public class ShaderCore {
     private static final Map<Integer, AdvancedPostPass> registered = new HashMap<>();
     private static final Map<Integer, AdvancedPostPass> active = new HashMap<>();
     private static final Map<Integer, Boolean> lastState = new HashMap<>();
-    private static final Map<Integer, Boolean> enabledShaders = new HashMap<>();
+    private static final Map<Integer, Boolean> disabledShaders = new HashMap<>();
 
 	private static boolean editTypeReq(List<EditType> editType, EditType targetEditType) {
 	    return editType.contains(targetEditType) || editType.contains(EditType.ALL);
@@ -88,7 +88,7 @@ public class ShaderCore {
             lastState.put(id, true);
             registeredShaderIds.put(id, shader);
             shaderAccessibility.put(id, editType);
-            enabledShaders.put(id, true);
+            disabledShaders.put(id, false);
             
             LOGGER.info("[CalamityAPI] Registered shader {}", shader);
             return id;
@@ -173,14 +173,14 @@ public class ShaderCore {
     public static boolean editShaderToggle(int ShaderId, boolean isEnabled) {
     	List<EditType> shaderType = shaderAccessibility.getOrDefault(ShaderId, new ArrayList<>());
     	if ( editTypeReq(shaderType, EditType.TOGGLE) == true ) {
-    		enabledShaders.put(ShaderId, !isEnabled);
+    		disabledShaders.put(ShaderId, !isEnabled);
     		return true;
     	}
     	return false;
     }
 	
 	public static boolean isShaderEnabled(int ShaderId) {
-		return !enabledShaders.getOrDefault(ShaderId, true);
+		return !disabledShaders.getOrDefault(ShaderId, true);
 	}
 
 	/*
@@ -272,7 +272,7 @@ public class ShaderCore {
 	
 	    for (Map.Entry<Integer, AdvancedPostPass> entry : active.entrySet()) {
 			int id = entry.getKey();
-			if (enabledShaders.getOrDefault(id, false)) continue;
+			if (disabledShaders.getOrDefault(id, false)) continue;
 
 	    	AdvancedPostPass pass = entry.getValue();
 
@@ -329,7 +329,7 @@ public class ShaderCore {
 	
 	    for (Map.Entry<Integer, AdvancedPostPass> entry : registered.entrySet()) {
 	        int id = entry.getKey();
-	        boolean isDisabled = enabledShaders.getOrDefault(id, false);
+	        boolean isDisabled = disabledShaders.getOrDefault(id, false);
 	        boolean shouldRun = lastState.getOrDefault(id, false);
 	
 	        if (!isDisabled && shouldRun) {
