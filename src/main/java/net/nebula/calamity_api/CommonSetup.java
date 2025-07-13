@@ -25,12 +25,12 @@ public class CommonSetup {
 //		event.register("calamity_api:simple/color_clamp", effect -> {
 //			effect.effect().safeGetUniform("Data").set(0.08F,0.91F,0F);
 //		    return CalamityUtils.inScreenBounds(new Vector3f(0.5F,5.5F,0.5F));
-//		}, true);
+//		}, true, event.toList(ShaderCore.EditType.ALL));
 
 //		id0 = event.register("calamity_api:advanced/cracks", effect -> {
 //			effect.sampler("HeightmapSampler",new ResourceLocation("calamity_api","textures/noise_heightmap.png"));
 //			return true;
-//		}, false, ShaderCore.EditType.ALL, true);
+//		}, false, event.toList(ShaderCore.EditType.ALL));
 
 //		event.register("calamity_api:advanced/black_hole", effect -> {
 //			if (CalamityUtils.getCameraType() == CameraType.THIRD_PERSON_FRONT) return false;
@@ -41,7 +41,7 @@ public class CommonSetup {
 //			float screenSize = CalamityUtils.worldSpaceSize(pos.z, 1.0F);
 //			effect.effect().safeGetUniform("Data").set(pos.x, pos.y, screenSize);
 //			return true;
-//		}, true, ShaderCore.EditType.ALL, true);
+//		}, true, event.toList(ShaderCore.EditType.ALL));
 		
 	}
 

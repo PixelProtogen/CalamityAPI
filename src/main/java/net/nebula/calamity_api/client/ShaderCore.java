@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import com.ibm.icu.impl.Pair;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import java.util.Set;
+import java.util.LinkedHashSet;
 
 // Idk why i added to add some notes to stuff but yea
 
@@ -53,29 +55,25 @@ public class ShaderCore {
     private static AdvancedEffectInstance effect;
     private static final ResourceLocation coreShader = new ResourceLocation("calamity_api:shaders/post/blank.json");
 	private static final String endProgram = "blit";
-	public enum EditType { FIXED, UPDATEABLE, FUNCTION, TOGGLE, ALL, UPDT_FUNC, UPDT_TOGL, FUNC_TOGL; }
+	public enum EditType {UPDATEABLE, FUNCTION, TOGGLE, ALL}
 	private static int gameLoadedShaders = 0;
-	private static final Map<Integer, EditType> shaderAccessibility = new HashMap<>();
+	private static final Map<Integer, List<EditType>> shaderAccessibility = new HashMap<>();
     private static final Map<Integer, String> registeredShaderIds = new HashMap<>();
     private static final Map<Integer, AdvancedPostPass> registered = new HashMap<>();
     private static final Map<Integer, AdvancedPostPass> active = new HashMap<>();
     private static final Map<Integer, Boolean> lastState = new HashMap<>();
-    private static final Map<Integer, Boolean> disabledShaders = new HashMap<>();
+    private static final Map<Integer, Boolean> enabledShaders = new HashMap<>();
 
-    private static boolean editTypeReq(EditType editType, EditType targetEditType) {
-		return switch (editType) {
-			case FIXED -> false;
-			case UPDATEABLE -> targetEditType == EditType.UPDATEABLE || targetEditType == EditType.UPDT_FUNC || targetEditType == EditType.UPDT_TOGL || targetEditType == EditType.ALL;
-			case FUNCTION -> targetEditType == EditType.FUNCTION || targetEditType == EditType.UPDT_FUNC || targetEditType == EditType.FUNC_TOGL || targetEditType == EditType.ALL;
-			case TOGGLE -> targetEditType == EditType.TOGGLE || targetEditType == EditType.UPDT_TOGL || targetEditType == EditType.FUNC_TOGL || targetEditType == EditType.ALL;
-			case UPDT_FUNC -> targetEditType == EditType.UPDATEABLE || targetEditType == EditType.FUNCTION || targetEditType == EditType.UPDT_FUNC || targetEditType == EditType.ALL;
-			case UPDT_TOGL -> targetEditType == EditType.UPDATEABLE || targetEditType == EditType.TOGGLE || targetEditType == EditType.UPDT_TOGL || targetEditType == EditType.ALL;
-			case FUNC_TOGL -> targetEditType == EditType.FUNCTION || targetEditType == EditType.TOGGLE || targetEditType == EditType.FUNC_TOGL || targetEditType == EditType.ALL;
-			case ALL -> true;
-		};
+	private static boolean editTypeReq(List<EditType> editType, EditType targetEditType) {
+	    return editType.contains(targetEditType) || editType.contains(EditType.ALL);
 	}
 	
     public static class REGISTER extends Event {
+		public static List<EditType> toList(EditType... types) {
+			Set<EditType> unique = new LinkedHashSet<>(List.of(types));
+			return List.copyOf(unique);
+		}
+
     	/*
     	 * Shader : PATH to your shader (program/shader.json) file
     	 * Context: The controlling function that sets variables and etc.
@@ -83,14 +81,14 @@ public class ShaderCore {
     	 * editType: Controls what part of shader can be changed after registry
     	 * toggleable: Controls if your shader should even be loaded or no
     	 */
-        public static int register(String shader, Function<AdvancedPostPass, Boolean> context, boolean updateOnTick,@Nullable EditType editType, @Nullable Boolean toggleable) {
+        public static int register(String shader, Function<AdvancedPostPass, Boolean> context, boolean updateOnTick,@Nullable List<EditType> editType) {
         	int id = gameLoadedShaders++;
-        	editType = editType != null ? editType : EditType.FIXED;
+        	editType = editType != null ? editType : new ArrayList<>();
             registered.put(id, new AdvancedPostPass(shader, null, context, updateOnTick));
             lastState.put(id, true);
             registeredShaderIds.put(id, shader);
             shaderAccessibility.put(id, editType);
-            disabledShaders.put(id, toggleable != null ? !toggleable : false);
+            enabledShaders.put(id, true);
             
             LOGGER.info("[CalamityAPI] Registered shader {}", shader);
             return id;
@@ -147,7 +145,7 @@ public class ShaderCore {
 	 * Edit Shader's Function
 	 */
     public static boolean editShader(int ShaderId,Function<AdvancedPostPass, Boolean> context) {
-    	EditType shaderType = shaderAccessibility.getOrDefault(ShaderId, EditType.FIXED);
+    	List<EditType> shaderType = shaderAccessibility.getOrDefault(ShaderId, new ArrayList<>());
     	if ( editTypeReq(shaderType, EditType.FUNCTION) == true ) {
     		AdvancedPostPass old = registered.get(ShaderId);
     		registered.put(ShaderId, new AdvancedPostPass(old.shader(), null, context, old.updateable()));
@@ -160,7 +158,7 @@ public class ShaderCore {
 	 * Edit Shader's Tick toggle
 	 */
     public static boolean editShader(int ShaderId, boolean updateOnTick) {
-    	EditType shaderType = shaderAccessibility.getOrDefault(ShaderId, EditType.FIXED);
+    	List<EditType> shaderType = shaderAccessibility.getOrDefault(ShaderId, new ArrayList<>());
     	if ( editTypeReq(shaderType, EditType.UPDATEABLE) == true ) {
     		AdvancedPostPass old = registered.get(ShaderId);
     		registered.put(ShaderId, new AdvancedPostPass(old.shader(), null, old.func(), updateOnTick));
@@ -173,16 +171,16 @@ public class ShaderCore {
 	 * Toggle Shader's Work
 	 */
     public static boolean editShaderToggle(int ShaderId, boolean isEnabled) {
-    	EditType shaderType = shaderAccessibility.getOrDefault(ShaderId, EditType.FIXED);
+    	List<EditType> shaderType = shaderAccessibility.getOrDefault(ShaderId, new ArrayList<>());
     	if ( editTypeReq(shaderType, EditType.TOGGLE) == true ) {
-    		disabledShaders.put(ShaderId, !isEnabled);
+    		enabledShaders.put(ShaderId, !isEnabled);
     		return true;
     	}
     	return false;
     }
 	
 	public static boolean isShaderEnabled(int ShaderId) {
-		return !disabledShaders.getOrDefault(ShaderId, true);
+		return !enabledShaders.getOrDefault(ShaderId, true);
 	}
 
 	/*
@@ -274,7 +272,7 @@ public class ShaderCore {
 	
 	    for (Map.Entry<Integer, AdvancedPostPass> entry : active.entrySet()) {
 			int id = entry.getKey();
-			if (disabledShaders.getOrDefault(id, false)) continue;
+			if (enabledShaders.getOrDefault(id, false)) continue;
 
 	    	AdvancedPostPass pass = entry.getValue();
 
@@ -331,7 +329,7 @@ public class ShaderCore {
 	
 	    for (Map.Entry<Integer, AdvancedPostPass> entry : registered.entrySet()) {
 	        int id = entry.getKey();
-	        boolean isDisabled = disabledShaders.getOrDefault(id, false);
+	        boolean isDisabled = enabledShaders.getOrDefault(id, false);
 	        boolean shouldRun = lastState.getOrDefault(id, false);
 	
 	        if (!isDisabled && shouldRun) {
